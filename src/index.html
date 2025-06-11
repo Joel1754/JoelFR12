@@ -1,17 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <title>Vanilla JavaScript App</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista Dinámica</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    h1 {
+      color: #333;
+    }
+    input[type="text"] {
+      padding: 8px;
+      width: 250px;
+      margin-right: 10px;
+    }
+    button {
+      padding: 8px 12px;
+    }
+    ul {
+      margin-top: 20px;
+      padding: 0;
+      list-style-type: disc;
+    }
+    li {
+      background: #fff;
+      padding: 8px;
+      margin-bottom: 5px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
-
 <body>
-  <main>
-    <h1>JOEL</h1>
-  </main>
-</body>
+  <h1>Lista de Elementos</h1>
+  <input type="text" id="itemInput" placeholder="Escribe un elemento" />
+  <button onclick="agregarElemento()">Agregar</button>
 
+  <ul id="lista">
+    <!-- Elementos se agregan aquí -->
+  </ul>
+
+  <script>
+    function agregarElemento() {
+      const input = document.getElementById('itemInput');
+      const valor = input.value.trim();
+      if (valor) {
+        const li = document.createElement('li');
+        li.textContent = valor;
+        document.getElementById('lista').appendChild(li);
+        input.value = '';
+      }
+    }
+  </script>
+</body>
 </html>
+
