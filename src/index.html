@@ -1,29 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MiniFacebook</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiniFacebook - Inicio</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
       background-color: #e9ebee;
     }
-
     header {
       background-color: #1877f2;
       color: white;
       padding: 15px;
       text-align: center;
       font-size: 24px;
+      position: sticky;
+      top: 0;
     }
-
     .container {
       max-width: 600px;
       margin: 20px auto;
@@ -32,19 +27,16 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     .profile {
       display: flex;
       align-items: center;
       margin-bottom: 15px;
     }
-
     .profile img {
       width: 50px;
       border-radius: 50%;
       margin-right: 10px;
     }
-
     textarea {
       width: 100%;
       height: 80px;
@@ -53,7 +45,9 @@
       border-radius: 5px;
       border: 1px solid #ccc;
     }
-
+    input[type="file"] {
+      margin-top: 10px;
+    }
     button {
       margin-top: 10px;
       padding: 10px 20px;
@@ -63,18 +57,17 @@
       border-radius: 5px;
       cursor: pointer;
     }
-
     .post {
       margin-top: 20px;
       background-color: #f0f2f5;
       padding: 15px;
       border-radius: 8px;
     }
-
-    .post p {
-      margin-bottom: 5px;
+    .post img {
+      max-width: 100%;
+      margin-top: 10px;
+      border-radius: 5px;
     }
-
     .timestamp {
       font-size: 12px;
       color: gray;
@@ -82,7 +75,6 @@
   </style>
 </head>
 <body>
-
   <header>MiniFacebook</header>
 
   <div class="container">
@@ -92,6 +84,7 @@
     </div>
 
     <textarea id="postInput" placeholder="¿Qué estás pensando?"></textarea>
+    <input type="file" id="imageInput" accept="image/*">
     <button onclick="publicar()">Publicar</button>
 
     <div id="feed"></div>
@@ -101,33 +94,53 @@
     window.onload = () => {
       const datos = localStorage.getItem("posts");
       if (datos) {
-        JSON.parse(datos).forEach(p => agregarPost(p.texto, p.fecha));
+        JSON.parse(datos).reverse().forEach(p => agregarPost(p.texto, p.fecha, p.imagen));
       }
     };
 
     function publicar() {
       const texto = document.getElementById("postInput").value.trim();
-      if (texto === "") return;
+      const file = document.getElementById("imageInput").files[0];
+
+      if (texto === "" && !file) return;
+
       const fecha = new Date().toLocaleString();
-      agregarPost(texto, fecha);
-      guardarEnLocal(texto, fecha);
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imgData = e.target.result;
+          agregarPost(texto, fecha, imgData);
+          guardarEnLocal(texto, fecha, imgData);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        agregarPost(texto, fecha, null);
+        guardarEnLocal(texto, fecha, null);
+      }
+
       document.getElementById("postInput").value = "";
+      document.getElementById("imageInput").value = null;
     }
 
-    function agregarPost(texto, fecha) {
+    function agregarPost(texto, fecha, imagen) {
       const post = document.createElement("div");
       post.className = "post";
       post.innerHTML = `<p>${texto}</p><div class="timestamp">${fecha}</div>`;
+      if (imagen) {
+        const img = document.createElement("img");
+        img.src = imagen;
+        post.appendChild(img);
+      }
       document.getElementById("feed").prepend(post);
     }
 
-    function guardarEnLocal(texto, fecha) {
+    function guardarEnLocal(texto, fecha, imagen) {
       const posts = JSON.parse(localStorage.getItem("posts")) || [];
-      posts.push({ texto, fecha });
+      posts.push({ texto, fecha, imagen });
       localStorage.setItem("posts", JSON.stringify(posts));
     }
   </script>
-
 </body>
 </html>
 
