@@ -2,160 +2,134 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lista Dinámica</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MiniFacebook</title>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      padding: 20px;
+      background-color: #e9ebee;
     }
-    h1 {
-      color: #333;
+
+    header {
+      background-color: #1877f2;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 24px;
     }
-    input[type="text"] {
-      padding: 8px;
-      width: 250px;
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .profile img {
+      width: 50px;
+      border-radius: 50%;
       margin-right: 10px;
     }
-    button {
-      padding: 8px 12px;
-      margin: 5px 2px;
-    }
-    ul {
-      margin-top: 20px;
-      padding: 0;
-      list-style: none;
-    }
-    li {
-      background: #fff;
+
+    textarea {
+      width: 100%;
+      height: 80px;
+      resize: none;
       padding: 10px;
-      margin-bottom: 8px;
       border-radius: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      border: 1px solid #ccc;
     }
-    .controls {
-      display: flex;
-      gap: 5px;
-    }
-    .btn {
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #1877f2;
+      color: white;
       border: none;
-      padding: 5px 8px;
-      border-radius: 4px;
+      border-radius: 5px;
       cursor: pointer;
     }
-    .edit-btn {
-      background-color: #007bff;
-      color: white;
+
+    .post {
+      margin-top: 20px;
+      background-color: #f0f2f5;
+      padding: 15px;
+      border-radius: 8px;
     }
-    .delete-btn {
-      background-color: red;
-      color: white;
+
+    .post p {
+      margin-bottom: 5px;
+    }
+
+    .timestamp {
+      font-size: 12px;
+      color: gray;
     }
   </style>
 </head>
 <body>
-  <h1>Lista de Tareas</h1>
-  <input type="text" id="itemInput" placeholder="Escribe un elemento" />
-  <button onclick="agregarElemento()">Agregar</button>
-  <button onclick="ordenarLista()">Ordenar A-Z</button>
-  <button onclick="exportarLista()">Exportar TXT</button>
 
-  <ul id="lista"></ul>
+  <header>MiniFacebook</header>
+
+  <div class="container">
+    <div class="profile">
+      <img src="https://via.placeholder.com/50" alt="Usuario" />
+      <strong>Usuario Demo</strong>
+    </div>
+
+    <textarea id="postInput" placeholder="¿Qué estás pensando?"></textarea>
+    <button onclick="publicar()">Publicar</button>
+
+    <div id="feed"></div>
+  </div>
 
   <script>
-    const lista = document.getElementById('lista');
-    const input = document.getElementById('itemInput');
-
     window.onload = () => {
-      const datosGuardados = localStorage.getItem('lista');
-      if (datosGuardados) {
-        JSON.parse(datosGuardados).forEach(agregarElementoALista);
+      const datos = localStorage.getItem("posts");
+      if (datos) {
+        JSON.parse(datos).forEach(p => agregarPost(p.texto, p.fecha));
       }
     };
 
-    function agregarElemento() {
-      const texto = input.value.trim();
-      if (texto) {
-        agregarElementoALista(texto);
-        guardarLista();
-        input.value = '';
-      }
+    function publicar() {
+      const texto = document.getElementById("postInput").value.trim();
+      if (texto === "") return;
+      const fecha = new Date().toLocaleString();
+      agregarPost(texto, fecha);
+      guardarEnLocal(texto, fecha);
+      document.getElementById("postInput").value = "";
     }
 
-    function agregarElementoALista(texto) {
-      const li = document.createElement('li');
-      const span = document.createElement('span');
-      span.textContent = texto;
-
-      const editarBtn = document.createElement('button');
-      editarBtn.textContent = 'Editar';
-      editarBtn.className = 'btn edit-btn';
-      editarBtn.onclick = () => editarElemento(span);
-
-      const eliminarBtn = document.createElement('button');
-      eliminarBtn.textContent = 'Eliminar';
-      eliminarBtn.className = 'btn delete-btn';
-      eliminarBtn.onclick = () => eliminarElemento(li);
-
-      const controles = document.createElement('div');
-      controles.className = 'controls';
-      controles.appendChild(editarBtn);
-      controles.appendChild(eliminarBtn);
-
-      li.appendChild(span);
-      li.appendChild(controles);
-      lista.appendChild(li);
+    function agregarPost(texto, fecha) {
+      const post = document.createElement("div");
+      post.className = "post";
+      post.innerHTML = `<p>${texto}</p><div class="timestamp">${fecha}</div>`;
+      document.getElementById("feed").prepend(post);
     }
 
-    function eliminarElemento(li) {
-      lista.removeChild(li);
-      guardarLista();
-    }
-
-    function editarElemento(span) {
-      const nuevoTexto = prompt("Editar elemento:", span.textContent);
-      if (nuevoTexto !== null && nuevoTexto.trim() !== '') {
-        span.textContent = nuevoTexto.trim();
-        guardarLista();
-      }
-    }
-
-    function guardarLista() {
-      const elementos = [];
-      lista.querySelectorAll('li span').forEach(span => {
-        elementos.push(span.textContent.trim());
-      });
-      localStorage.setItem('lista', JSON.stringify(elementos));
-    }
-
-    function ordenarLista() {
-      const elementos = [];
-      lista.querySelectorAll('li span').forEach(span => {
-        elementos.push(span.textContent.trim());
-      });
-      elementos.sort((a, b) => a.localeCompare(b, 'es'));
-      lista.innerHTML = '';
-      elementos.forEach(agregarElementoALista);
-      guardarLista();
-    }
-
-    function exportarLista() {
-      const elementos = [];
-      lista.querySelectorAll('li span').forEach(span => {
-        elementos.push(span.textContent.trim());
-      });
-      const contenido = elementos.join('\n');
-      const blob = new Blob([contenido], { type: 'text/plain' });
-      const enlace = document.createElement('a');
-      enlace.href = URL.createObjectURL(blob);
-      enlace.download = 'lista.txt';
-      enlace.click();
+    function guardarEnLocal(texto, fecha) {
+      const posts = JSON.parse(localStorage.getItem("posts")) || [];
+      posts.push({ texto, fecha });
+      localStorage.setItem("posts", JSON.stringify(posts));
     }
   </script>
+
 </body>
 </html>
+
 
 
