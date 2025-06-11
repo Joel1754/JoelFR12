@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,8 +7,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
       background-color: #f4f4f4;
+      padding: 20px;
     }
     h1 {
       color: #333;
@@ -20,41 +20,142 @@
     }
     button {
       padding: 8px 12px;
+      margin: 5px 2px;
     }
     ul {
       margin-top: 20px;
       padding: 0;
-      list-style-type: disc;
+      list-style: none;
     }
     li {
       background: #fff;
-      padding: 8px;
-      margin-bottom: 5px;
+      padding: 10px;
+      margin-bottom: 8px;
       border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .controls {
+      display: flex;
+      gap: 5px;
+    }
+    .btn {
+      border: none;
+      padding: 5px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .edit-btn {
+      background-color: #007bff;
+      color: white;
+    }
+    .delete-btn {
+      background-color: red;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <h1>Lista de Elementos</h1>
+  <h1>Lista de Tareas</h1>
   <input type="text" id="itemInput" placeholder="Escribe un elemento" />
   <button onclick="agregarElemento()">Agregar</button>
+  <button onclick="ordenarLista()">Ordenar A-Z</button>
+  <button onclick="exportarLista()">Exportar TXT</button>
 
-  <ul id="lista">
-    <!-- Elementos se agregan aquí -->
-  </ul>
+  <ul id="lista"></ul>
 
   <script>
+    const lista = document.getElementById('lista');
+    const input = document.getElementById('itemInput');
+
+    window.onload = () => {
+      const datosGuardados = localStorage.getItem('lista');
+      if (datosGuardados) {
+        JSON.parse(datosGuardados).forEach(agregarElementoALista);
+      }
+    };
+
     function agregarElemento() {
-      const input = document.getElementById('itemInput');
-      const valor = input.value.trim();
-      if (valor) {
-        const li = document.createElement('li');
-        li.textContent = valor;
-        document.getElementById('lista').appendChild(li);
+      const texto = input.value.trim();
+      if (texto) {
+        agregarElementoALista(texto);
+        guardarLista();
         input.value = '';
       }
+    }
+
+    function agregarElementoALista(texto) {
+      const li = document.createElement('li');
+      const span = document.createElement('span');
+      span.textContent = texto;
+
+      const editarBtn = document.createElement('button');
+      editarBtn.textContent = 'Editar';
+      editarBtn.className = 'btn edit-btn';
+      editarBtn.onclick = () => editarElemento(span);
+
+      const eliminarBtn = document.createElement('button');
+      eliminarBtn.textContent = 'Eliminar';
+      eliminarBtn.className = 'btn delete-btn';
+      eliminarBtn.onclick = () => eliminarElemento(li);
+
+      const controles = document.createElement('div');
+      controles.className = 'controls';
+      controles.appendChild(editarBtn);
+      controles.appendChild(eliminarBtn);
+
+      li.appendChild(span);
+      li.appendChild(controles);
+      lista.appendChild(li);
+    }
+
+    function eliminarElemento(li) {
+      lista.removeChild(li);
+      guardarLista();
+    }
+
+    function editarElemento(span) {
+      const nuevoTexto = prompt("Editar elemento:", span.textContent);
+      if (nuevoTexto !== null && nuevoTexto.trim() !== '') {
+        span.textContent = nuevoTexto.trim();
+        guardarLista();
+      }
+    }
+
+    function guardarLista() {
+      const elementos = [];
+      lista.querySelectorAll('li span').forEach(span => {
+        elementos.push(span.textContent.trim());
+      });
+      localStorage.setItem('lista', JSON.stringify(elementos));
+    }
+
+    function ordenarLista() {
+      const elementos = [];
+      lista.querySelectorAll('li span').forEach(span => {
+        elementos.push(span.textContent.trim());
+      });
+      elementos.sort((a, b) => a.localeCompare(b, 'es'));
+      lista.innerHTML = '';
+      elementos.forEach(agregarElementoALista);
+      guardarLista();
+    }
+
+    function exportarLista() {
+      const elementos = [];
+      lista.querySelectorAll('li span').forEach(span => {
+        elementos.push(span.textContent.trim());
+      });
+      const contenido = elementos.join('\n');
+      const blob = new Blob([contenido], { type: 'text/plain' });
+      const enlace = document.createElement('a');
+      enlace.href = URL.createObjectURL(blob);
+      enlace.download = 'lista.txt';
+      enlace.click();
     }
   </script>
 </body>
 </html>
+
 
